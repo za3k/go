@@ -3,14 +3,11 @@
 html, body {
     margin: 0;
     padding: 0;
+    width: 100%;
 }
 
 #about {
     font-family: monospace;
-    display: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
     padding: 2em;
 }
 
@@ -47,20 +44,18 @@ html, body {
         display: flex;
         position: relative;
         max-height: 100%;
-        max-width: 100%;
+        width: 100%;
     }
 
     #game > * { flex: 1 1; }
 
     #board {
         aspect-ratio: 1 / 1;
-        flex-grow: 1;
-        flex-shrink: 1;
     }
 
     #game > .right {
-        flex: 0 0;
-        min-width: max(10%, 20em);
+        flex: .1 .1;
+        min-width: max(10%, 18em);
         position: relative;
         min-height: 100vh;
     }
@@ -79,6 +74,36 @@ html, body {
         bottom: 0;
         left: 0;
         right: 0;
+    }
+    #game #about { border-left: 1px solid lightgrey; }
+}
+@media screen and (max-width: 900px) {
+    #game {
+        display: flex;
+        position: relative;
+        width: 100%;
+        flex-direction: column;
+    }
+
+    #board {
+        flex: 1 1;
+    }
+
+    #game > .right {
+        flex: 0 0;
+    }
+
+    #turn-info {
+        margin: .1em 0;
+    }
+    .game-actions {
+        padding: 1em;
+        display: flex;
+    }
+    .game-actions > * { flex: 1; text-align: center; }
+    #about {  /* Can be in right sidebar or main area */
+        border-top: 1px solid lightgrey;
+        flex: 0 0;
     }
     #game #about { border-left: 1px solid lightgrey; }
 }
