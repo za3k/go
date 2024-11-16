@@ -64,17 +64,8 @@ if (maxSize > 60) {
 
 class Game {
     constructor(size, online) {
-        this.player = 0 // whose turn is it
-        this.size = size
         this.online = online
-        this.board = []
-        for (var y=0; y<size; y++) {
-            this.board.push([])
-            for (var x=0; x<size; x++) {
-                this.board[y].push(null)
-            }
-        }
-        this.lastMove = {x:-1, y:-1}
+        this.engine = new Engine(size)
 
         $(".action.resign").on("click", () => { this.resign() })
         $(".action.pass").on("click", () => { this.pass() })
@@ -86,7 +77,10 @@ class Game {
         })
     }
 
-    init(size) {
+    get player() { return this.engine.player }
+    get size() { return this.engine.size }
+
+    init() {
         const board = boards[this.size]
         board.forEach((row, rowNum) => {
             const r = $(`<div></div>`)
@@ -99,9 +93,16 @@ class Game {
     }
 
     setSprite(pos, name) {
-        const tile = $(`#board > :eq(${pos.y+1}) > :eq(${pos.x+1})`)
+        const tile = $(`#board > :eq(${pos.y}) > :eq(${pos.x})`)
         tile.empty()
         if (name) tile.append(this.sprites[name].make())
+    }
+
+    addPreview(pos, name, callback) {
+        if (!name) return
+        const tile = $(`#board > :eq(${pos.y}) > :eq(${pos.x})`)
+        const sprite = this.sprites[name].make()
+        $(sprite).addClass("possible-move").appendTo(tile).on("click", callback)
     }
 
     playSound(name) {
@@ -115,22 +116,36 @@ class Game {
         $("#win").show().text(`${["Black", "White"][winner]} wins`).prepend(sprite.make()).append(sprite.make())
     }
 
+    eachPos(f) {
+        for (var y=0; y<this.size; y++) {
+            for (var x=0; x<this.size; x++) {
+                f({x, y})
+            }
+        }
+    }
+
     updateUI() {
         $(".sprite .sprite").remove()
 
-        for (var y=0; y<this.size; y++) {
-            for (var x=0; x<this.size; x++) {
-                const sprite = this.board[y][x]
-                this.setSprite({x, y}, sprite)
-            }
-        }
+        this.eachPos((pos) => {
+            const sprite = this.engine.get(pos)
+            this.setSprite(pos, sprite)
+        })
 
         $("#turn-info").text(`${["Black", "White"][this.player]}'s turn`)
-        const sprite = this.sprites[["black", "white"][this.player]]
+        const color = ["black", "white"][this.player]
+        const sprite = this.sprites[color]
         $("#turn-info").prepend(sprite.make()).append(sprite.make())
 
         if (this.online && this.me == this.player || !this.online) {  // My turn
-
+            this.eachPos((pos) => {
+                if (this.engine.canMove(pos)) { 
+                    this.addPreview(pos, color, () => {
+                        this.engine.move(pos)
+                        this.updateUI()
+                    })
+                }
+            })
         } else { // Not my turn
 
         }

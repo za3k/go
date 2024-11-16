@@ -121,7 +121,6 @@ html, body {
     background-color: #eeeeee;
 }
 
-
 #board {
     display: flex;
     flex-direction: column;
@@ -154,4 +153,17 @@ html, body {
 #action-area {
     padding: 2rem;
     width: 8rem;
+}
+
+.possible-move {
+    /*visibility: hidden;*/
+    opacity: 0;
+}
+.possible-move:hover {
+    visibility: visible;
+    opacity: 0.8;
+}
+.possible-move:active {
+    visibility: visible;
+    opacity: 1;
 }
