@@ -47,8 +47,20 @@ const boards = {
         "└┴┴┴┴┴┴┴┘",
     ],
 }
-const spritesPromise = Sprites.loadAll("sprites60.png", 60,
-    ["┌","┬","┐","├","┼","┤","└","┴","┘",".","white","whiteRecent","whiteDead","black","blackRecent","blackDead"])
+
+// TODO: Do with sizing instead
+var spritesPromise
+const spriteNames = ["┌","┬","┐","├","┼","┤","└","┴","┘",".","white","whiteRecent","whiteDead","black","blackRecent","blackDead"]
+const maxSize = Math.min(window.innerWidth, window.innerHeight) / 19
+console.log(maxSize)
+if (maxSize > 60) {
+    spritesPromise = Sprites.loadAll("sprites60.png", 60, spriteNames)
+} else if (maxSize > 30) {
+    spritesPromise = Sprites.loadAll("sprites30.png", 30, spriteNames)
+} else {
+    spritesPromise = Sprites.loadAll("sprites15.png", 15, spriteNames)
+}
+    
 
 class Game {
     constructor(size, online) {

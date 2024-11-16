@@ -54,7 +54,7 @@ html, body {
 
     #board {
         aspect-ratio: 1 / 1;
-        flex-grow: 0;
+        flex-grow: 1;
         flex-shrink: 1;
     }
 
@@ -96,6 +96,14 @@ html, body {
     background-color: #eeeeee;
 }
 
+
+#board {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+    
 #board > div {
     display: flex;
     flex-direction: row;
