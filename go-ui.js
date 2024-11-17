@@ -190,6 +190,11 @@ class Game {
                     })
                 }
             })
+
+            if (this.engine.lastMove) {
+                const sprite = ["whiteRecent", "blackRecent"][this.player]
+                this.setSprite(this.engine.lastMove, sprite)
+            }
         }
 
 

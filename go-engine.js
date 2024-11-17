@@ -33,7 +33,6 @@ class Engine {
                 this.board[y].push(null)
             }
         }
-        this.lastMove = {x:-1, y:-1}
         this.done = false
         this.passes = 0
         this.komi = 7.5
@@ -53,6 +52,7 @@ class Engine {
         this.passes++
         this.player = this.otherPlayer(this.player)
         if (this.passes >= 2) this.done = true
+        delete this.lastMove
     }
 
     clone() {
@@ -87,9 +87,9 @@ class Engine {
         if (this.sameBoard(this.board, this.koForbids)) throw new IllegalMove("Ko")
         this.koForbids = oldBoard
 
+        this.lastMove = pos
         this.player = this.otherPlayer(this.player)
         this.passes = 0
-        this.lastMove = pos
     }
 
     sameBoard(b1, b2) {
