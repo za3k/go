@@ -25,15 +25,41 @@
         <div id="about"><b>Go</b> is a classic board game. Learn how to play <a href="https://senseis.xmp.net/?RulesOfGoIntroductory">online</a>. This online version is by <a href="https://za3k.com">za3k</a>, written as part of <a href="https://za3k.com/hackaday">hack-a-day</a>. Source code is <a href="https://github.com/za3k/go">on github</a>.</div>
         <div id="win" style="display: none;">You win!</div>
         <div id="game-options">
-            <div class="action" data-size="19" data-online="false">19x19, local play</div>
-            <div class="action" data-size="13" data-online="false">13x13, local play</div>
-            <div class="action" data-size="9" data-online="false">9x9, local play</div>
-            <hr>
-            <div class="action" data-size="19" data-online="true">19x19, online play</div>
-            <div class="action" data-size="13" data-online="true">13x13, online play</div>
-            <div class="action" data-size="9" data-online="true">9x9, online play</div>
-            <hr>
-            <pre class="rules">Rules: Simple ko, chinese scoring, komi is 7.5</pre>
+            <div class="option">
+                <div class="label">Board size</div>
+                <div class="choice" data-size="19">19x19</div>
+                <div class="choice" data-size="13">13x13</div>
+                <div class="choice selected" data-size="9">9x9</div>
+            </div>
+            <div class="option">
+                <div class="label">Handicap</div>
+                <div class="choice selected" data-handicap="0">None</div>
+                <div class="choice" data-handicap="1">1</div>
+                <div class="choice" data-handicap="2">2</div>
+                <div class="choice" data-handicap="3">3</div>
+                <div class="choice" data-handicap="4">4</div>
+                <div class="choice" data-handicap="5">5</div>
+                <div class="choice" data-handicap="6">6</div>
+                <div class="choice" data-handicap="7">7</div>
+                <div class="choice" data-handicap="8">8</div>
+                <div class="choice" data-handicap="9">9</div>
+            </div>
+            <!--
+            <div class="option">
+                <div class="label">Online Color</div>
+                <div class="choice selected">Random</div>
+                <div class="choice" data-player="0">Black</div>
+                <div class="choice" data-player="1">White</div>
+            </div>
+            -->
+            <!--
+            <div class="option">
+                <div class="choice" data-online="true">Online</div>
+                <div class="choice selected" data-online="false">Local</div>
+            </div>
+            -->
+            <div class="action play">Play</div>
+            <pre class="rules">Rules: Chinese scoring, 7.5 komi, simple ko</pre>
         </div>
     </body>
 </html>

@@ -51,23 +51,18 @@ const boards = {
 // TODO: Do with sizing instead
 var spritesPromise
 const spriteNames = ["┌","┬","┐","├","┼","┤","└","┴","┘",".","white","whiteRecent","whiteDead","blackPoint","whitePoint","black","blackRecent","blackDead"]
-const maxSize = Math.min(window.innerWidth, window.innerHeight) / 19
-if (maxSize > 60) {
-    spritesPromise = Sprites.loadAll("sprites60.png", 60, spriteNames)
-} else if (maxSize > 45) {
-    spritesPromise = Sprites.loadAll("sprites45.png", 45, spriteNames)
-} else if (maxSize > 30) {
-    spritesPromise = Sprites.loadAll("sprites30.png", 30, spriteNames)
-} else {
-    spritesPromise = Sprites.loadAll("sprites15.png", 15, spriteNames)
-}
     
 function randInt(min, max) { return Math.floor(Math.random()*(max-min)) + min }
 
 class Game {
-    constructor(size, online) {
-        this.online = online
-        this.engine = new Engine(size)
+    constructor(options) {
+        this.online = options.online
+        if (typeof(options.player) === undefined) this.me = randInt(0, 2)
+        else                                      this.me = options.player
+
+        this.engine = new Engine(options)
+
+        this.makeBoard().then(() => { this.updateUI() })
 
         $(".action.resign").on("click", () => { 
             this.engine.resign()
@@ -87,17 +82,20 @@ class Game {
             this.updateUI()
         })
 
-        spritesPromise.then((sprites) => {
-            this.sprites = sprites
-            this.init()
-            this.updateUI()
-        })
     }
 
     get player() { return this.engine.player }
     get size() { return this.engine.size }
 
-    init() {
+    async makeBoard() {
+        const maxRes = Math.min(window.innerWidth, window.innerHeight) / this.size
+        const availableSizes = [15, 30, 45, 60]
+        var res = availableSizes[0]
+        for (var avail of availableSizes)
+            if (maxRes > avail) res = avail
+
+        this.sprites = await Sprites.loadAll(`sprites${res}.png`, res, spriteNames)
+
         const board = boards[this.size]
         board.forEach((row, rowNum) => {
             const r = $(`<div></div>`)
@@ -106,7 +104,6 @@ class Game {
                 r.append(this.sprites[symbol].make())
             })
         })
-
     }
 
     setSprite(pos, name) {
@@ -222,14 +219,25 @@ class Game {
     }
 }
 
-function main() {
-    const action = $(`#game-options > .action`).each((i, action) => {
-        $(action).on("click", (ev) => {
-            window.game = new Game($(ev.target).data("size"), $(ev.target).data("online"))
-            $("#game-options").hide()
-            $("#game").show()
-            $("#about").appendTo(".right")
-        })
+function main() { // Pick settings and click start
+    $("#game-options .choice").on("click", (ev) => {
+        const choice = $(ev.currentTarget)
+        const option = choice.parent()
+
+        option.find(".choice").removeClass("selected")
+        choice.addClass("selected")
+    })
+    $(".action.play").on("click", () => {
+        const options = {}
+        for (var o of ["handicap", "player", "size"]) {
+            const v = $(`#game-options .choice.selected[data-${o}]`).data(o)
+            if (typeof(v) !== "undefined") options[o] = Number(v)
+        }
+        window.game = new Game(options)
+        $("#game-options").hide()
+        $("#game").show()
+        $("#about").appendTo(".right")
     })
 }
+
 main()

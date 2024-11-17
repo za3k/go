@@ -2,6 +2,42 @@ class IllegalMove extends Error {
     constructor(message, options) { super(message, options) }
 }
 
+const handicaps = {
+    9: {
+        1: [ {x:6, y:2}, ],
+        2: [ {x:6, y:2}, {x:2, y:6}, ],
+        3: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, ],
+        4: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, {x:2, y:2}, ],
+        5: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, {x:2, y:2}, {x:4, y:4}, ],
+        6: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, {x:2, y:2}, {x:2, y:4}, {x:6, y:4}, ],
+        7: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, {x:2, y:2}, {x:2, y:4}, {x:6, y:4}, {x:4, y:4}, ],
+        8: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, {x:2, y:2}, {x:2, y:4}, {x:6, y:4}, {x:4, y:2}, {x:4, y:6}, ],
+        9: [ {x:6, y:2}, {x:2, y:6}, {x:6, y:6}, {x:2, y:2}, {x:2, y:4}, {x:6, y:4}, {x:4, y:2}, {x:4, y:6}, {x:4, y:4}, ],
+    },
+    13: {
+        1: [ {x:9, y:3}, ],
+        2: [ {x:9, y:3}, {x:3, y:9}, ],
+        3: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, ],
+        4: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, {x:3, y:3}, ],
+        5: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, {x:3, y:3}, {x:6, y:6}, ],
+        6: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, {x:3, y:3}, {x:3, y:6}, {x:9, y:6}, ],
+        7: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, {x:3, y:3}, {x:3, y:6}, {x:9, y:6}, {x:6, y:6}, ],
+        8: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, {x:3, y:3}, {x:3, y:6}, {x:9, y:6}, {x:6, y:3}, {x:6, y:9}, ],
+        9: [ {x:9, y:3}, {x:3, y:9}, {x:9, y:9}, {x:3, y:3}, {x:3, y:6}, {x:9, y:6}, {x:6, y:3}, {x:6, y:9}, {x:6, y:6}, ],
+    },
+    19: {
+        1: [ {x:15, y:3}, ],
+        2: [ {x:15, y:3}, {x:3, y:15}, ],
+        3: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, ],
+        4: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, {x:3, y:3}, ],
+        5: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, {x:3, y:3}, {x:9, y:9}, ],
+        6: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, {x:3, y:3}, {x:3, y:9}, {x:15, y:9}, ],
+        7: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, {x:3, y:3}, {x:3, y:9}, {x:15, y:9}, {x:9, y:9}, ],
+        8: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, {x:3, y:3}, {x:3, y:9}, {x:15, y:9}, {x:9, y:3}, {x:9, y:15}, ],
+        9: [ {x:15, y:3}, {x:3, y:15}, {x:15, y:15}, {x:3, y:3}, {x:3, y:9}, {x:15, y:9}, {x:9, y:3}, {x:9, y:15}, {x:9, y:9}, ],
+    }
+}
+
 class PosSet {
     constructor() {
         this.s = {}
@@ -23,22 +59,28 @@ class PosSet {
 }
 
 class Engine {
-    constructor(size) {
-        this.player = 0 // whose turn is it
-        this.board = []
-        this.scored = []
-        this.size = size
-        for (var y=0; y<size; y++) {
+    constructor(options) {
+        this.size = options.size || 9
+        this.handicap = options.handicap || 0
+        this.komi = options.komi || (this.handicap > 0 ? 0.5 : 7.5)
+        this.player = this.handicap > 0 ? 1 : 0 // Black, unless handicap game
+
+        this.board = [] // white, black, whiteDead, blackDead, null
+        this.scored = [] // End-of-game scoring for empty+dead squares: whitePoint, BlackPoint
+        for (var y=0; y<this.size; y++) {
             this.board.push([])
             this.scored.push([])
-            for (var x=0; x<size; x++) {
+            for (var x=0; x<this.size; x++) {
                 this.board[y].push(null)
                 this.scored[y].push(null)
             }
         }
         this.done = false
         this.passes = 0
-        this.komi = 7.5
+
+        if (this.handicap > 0)
+            for (var pos of handicaps[this.size][this.handicap])
+                this.set(pos, "black")
     }
 
     otherPlayer(p) {
@@ -241,7 +283,6 @@ class Engine {
     }
 
     finishScoring(player) {
-        // TODO: require both players to click it
         this.resigned = false
         if (this.score > 0) this.victor = 0
         else                this.victor = 1 // White wins ties, arbitrarily
