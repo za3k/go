@@ -67,6 +67,8 @@ class Engine {
         if (!!this.board[pos.y][pos.x]) throw new IllegalMove("That position is not empty")
 
         const color = ["black","white"][this.player]
+        const oldBoard = structuredClone(this.board)
+
         this.board[pos.y][pos.x] = color
         
         var captured = []
@@ -82,11 +84,20 @@ class Engine {
 
         if (this.libertiesGroup(pos) == 0) throw new IllegalMove("Suicide is not allowed")
 
-        // TODO: Disallow ko
+        if (this.sameBoard(this.board, this.koForbids)) throw new IllegalMove("Ko")
+        this.koForbids = oldBoard
 
         this.player = this.otherPlayer(this.player)
         this.passes = 0
         this.lastMove = pos
+    }
+
+    sameBoard(b1, b2) {
+        if ((!!b1) != (!!b2)) return false
+        for (var y=0; y<this.size; y++)
+            for (var x=0; x<this.size; x++)
+                if (b1[y][x] != b2[y][x]) return false
+        return true
     }
 
     neighborsPos(pos) { // Neighbors of the position
