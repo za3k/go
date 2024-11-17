@@ -185,6 +185,13 @@ html, body {
 
 .option > .label {
     flex: 0 0 ;
+    display: flex;
+    justify-content: center;
+    margin-right: 1em;
+    min-width: fit-content;
+    font-weight: bold;
+    flex-wrap: wrap;
+    align-items: center;
 }
 .option > .choice {
     flex: 1 1;
