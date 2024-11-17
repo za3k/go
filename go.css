@@ -116,9 +116,15 @@ html, body {
     margin: 5px;
     border: 1px solid;
     user-select: none;
+    box-shadow: 0 3px #999;
 }
 .action:hover {
     background-color: #eeeeee;
+}
+.action:active {
+    background-color: #eeeeee;
+    box-shadow: 0 1px #999;
+    transform: translateY(2px);
 }
 
 #board {
@@ -148,6 +154,10 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#score {
+    text-align: center;
 }
 
 #action-area {
