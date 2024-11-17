@@ -2,7 +2,7 @@
 
 There are a number of ways to play free online, but most need registration. I made a little board so you can play without an account.
 
-You can [play online](https://za3k.github.io/go).
+You can [try the demo](https://za3k.github.io/go). The board works well, but there's no online play.
 
 Credits:
 - "newspaper" style board original
