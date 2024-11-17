@@ -50,7 +50,7 @@ const boards = {
 
 // TODO: Do with sizing instead
 var spritesPromise
-const spriteNames = ["┌","┬","┐","├","┼","┤","└","┴","┘",".","white","whiteRecent","whiteDead","black","blackRecent","blackDead"]
+const spriteNames = ["┌","┬","┐","├","┼","┤","└","┴","┘",".","white","whiteRecent","whiteDead","blackPoint","whitePoint","black","blackRecent","blackDead"]
 const maxSize = Math.min(window.innerWidth, window.innerHeight) / 19
 if (maxSize > 60) {
     spritesPromise = Sprites.loadAll("sprites60.png", 60, spriteNames)
@@ -157,6 +157,27 @@ class Game {
             $(".finish-scoring").show()
             $("#score").show().text(this.score())
             $(".possible-move").remove()
+
+            $(".sprite .sprite").remove()
+            this.eachPos((pos) => {
+                const sprite = this.engine.getScored(pos)
+                this.setSprite(pos, sprite)
+
+                if (sprite) {
+                    const toggleSprite = {
+                        "white": "whiteDead",
+                        "black": "blackDead",
+                        "whiteDead": "white",
+                        "blackDead": "black",
+                    }[sprite]
+
+                    this.addPreview(pos, toggleSprite, () => {
+                        this.engine.toggleDead(pos)
+                        this.updateUI()
+                    })
+                }
+            })
+
         } else if (this.engine.done) {
             // Game is over
             const sprite = this.sprites[["black", "white"][this.engine.victor]]

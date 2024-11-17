@@ -26,11 +26,14 @@ class Engine {
     constructor(size) {
         this.player = 0 // whose turn is it
         this.board = []
+        this.scored = []
         this.size = size
         for (var y=0; y<size; y++) {
             this.board.push([])
+            this.scored.push([])
             for (var x=0; x<size; x++) {
                 this.board[y].push(null)
+                this.scored[y].push(null)
             }
         }
         this.done = false
@@ -51,8 +54,11 @@ class Engine {
     pass() {
         this.passes++
         this.player = this.otherPlayer(this.player)
-        if (this.passes >= 2) this.done = true
         delete this.lastMove
+        if (this.passes >= 2) {
+            this.done = true
+            this.markBoard()
+        }
     }
 
     clone() {
@@ -62,14 +68,18 @@ class Engine {
     }
 
     get(pos) { return this.board[pos.y][pos.x] }
+    getScored(pos) { return this.board[pos.y][pos.x] || this.scored[pos.y][pos.x] } // For visuals (null, whiteDead or blackDead)
+    getScore(pos) { return this.scored[pos.y][pos.x] || this.board[pos.y][pos.x] } // For scoring (whitePoint or blackPoint)
+    set(pos, v) { this.board[pos.y][pos.x] = v }
+    setScore(pos, v) { this.scored[pos.y][pos.x] = v }
 
     move(pos, hypothetical) {
-        if (!!this.board[pos.y][pos.x]) throw new IllegalMove("That position is not empty")
+        if (!!this.get(pos)) throw new IllegalMove("That position is not empty")
 
         const color = ["black","white"][this.player]
         const oldBoard = structuredClone(this.board)
 
-        this.board[pos.y][pos.x] = color
+        this.set(pos, color)
         
         var captured = []
         for (var neighbor of this.neighborsPos(pos)) {
@@ -120,7 +130,7 @@ class Engine {
 
     captureGroup(pos) { // Capture the group
         if (!this.get(pos)) return
-        for (var pos of this.positionsGroup(pos)) this.board[pos.y][pos.x] = null
+        for (var pos of this.positionsGroup(pos)) this.set(pos, null)
     }
 
     positionsGroup(group) {
@@ -153,15 +163,6 @@ class Engine {
         return liberties
     }
 
-    uniqueGroups(groups) { // Return unique groups out of the list
-        return groups // TODO, not needed yet
-    }
-
-    uniquePos(poses) {
-        // TODO: Not used
-        return new PosSet().add(...poses).poses()
-    }
-
     canMove(pos) {
         if (!!this.get(pos)) return false // Slight speedup
         const v2 = this.clone()
@@ -178,16 +179,86 @@ class Engine {
     }
 
     // Scoring
-    toggleDead(pos) {}
+    toggleDead(group) {
+        const color = this.get(group)
+        const changeTo = {
+            "white": "whiteDead",
+            "black": "blackDead",
+            "whiteDead": "white",
+            "blackDead": "black",
+        }[color]
+
+        if (!changeTo) return
+        for (var pos of this.positionsGroup(group)) this.set(pos, changeTo)
+
+        this.markBoard()
+    }
+
+    markBoard() {
+        // Change dead to removed on a copy
+        const v2 = this.clone()
+        for (var y=0; y<this.size; y++)
+            for (var x=0; x<this.size; x++) {
+                const pos = {x,y}
+                v2.set(pos, { "white": "white", "black": "black" }[v2.get(pos)] || null )
+            }
+
+        // Mark up this simplified board
+        const accounted = new PosSet()
+        for (var y=0; y<this.size; y++) {
+            for (var x=0; x<this.size; x++) {
+                const pos = {x,y}
+                if (!v2.get(pos) && !accounted.has(pos)) {
+                    accounted.add(...this.positionsGroup(pos))
+                    v2.markGroup(pos)
+                }
+            }
+        }
+
+        // Copy the results over to the original in this.scored
+        for (var y=0; y<this.size; y++)
+            for (var x=0; x<this.size; x++) {
+                const pos = {x, y}
+                if (!v2.get(pos)) this.setScore(pos, v2.getScore(pos))
+            }
+    }
+
+    markGroup(group) { // precondition: whiteDead, blackDead already changed to null
+        var marks = {}
+        var changeTo = null
+
+        for (var pos of this.neighborsGroup(group)) { // Mark down colors of all neighbors
+            const color = this.get(pos)
+            marks[color] = true
+        }
+
+        delete marks[null]
+        delete marks[undefined] // Just in case
+        marks = Object.keys(marks)
+        if (marks.length == 1) changeTo = {"white": "whitePoint", "black": "blackPoint"}[marks[0]]
+
+        for (var pos of this.positionsGroup(group)) this.setScore(pos, changeTo)
+    }
+
     finishScoring(player) {
         // TODO: require both players to click it
         this.resigned = false
         if (this.score > 0) this.victor = 0
         else                this.victor = 1 // White wins ties, arbitrarily
     }
+
     get score() { // Positive is "for black"
         var score = -this.komi
-        return score // TODO
+        const scoreChange = {
+            "black": 1,
+            "blackPoint": 1,
+            "white": -1,
+            "whitePoint": -1,
+            null: 0,
+        }
+        for (var y=0; y<this.size; y++)
+            for (var x=0; x<this.size; x++)
+                score += scoreChange[this.getScore({x,y})]
+        return score
     } 
-
 }
