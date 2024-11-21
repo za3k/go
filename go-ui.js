@@ -55,31 +55,27 @@ const spriteNames = ["┌","┬","┐","├","┼","┤","└","┴","┘",".","
 function randInt(min, max) { return Math.floor(Math.random()*(max-min)) + min }
 
 class Game {
-    constructor(options) {
+    constructor(options, me) {
         this.online = options.online
-        if (typeof(options.player) === undefined) this.me = randInt(0, 2)
-        else                                      this.me = options.player
+        this.me = me
 
         this.engine = new Engine(options)
 
         this.makeBoard().then(() => { this.updateUI() })
 
         $(".action.resign").on("click", () => { 
-            this.engine.resign()
-            this.updateUI() 
+            game.resign()
         })
         $(".action.pass").on("click", () => {
-            this.engine.pass()
-            this.updateUI()
+            game.pass()
         })
         $(".action.finish-scoring").on("click", () => {
             if (this.online)
-                this.engine.finishScoring(this.me)
+                game.finishScoring(this.me)
             else {
-                this.engine.finishScoring(0)
-                this.engine.finishScoring(1)
+                game.finishScoring(0)
+                game.finishScoring(1)
             }
-            this.updateUI()
         })
 
     }
@@ -145,6 +141,28 @@ class Game {
         return `${"BW"[0+(score <= 0)]}+${Math.abs(score)}`
     }
 
+    move() {
+        this.engine.move(...arguments)
+        this.playClack()
+        this.updateUI()
+    }
+    toggleDead(pos) {
+        this.engine.toggleDead(...arguments)
+        this.updateUI()
+    }
+    finishScoring() {
+        this.engine.finishScoring(...arguments)
+        this.updateUI()
+    }
+    resign() {
+        this.engine.resign(...arguments)
+        this.updateUI() 
+    }
+    pass() {
+        this.engine.pass(...arguments)
+        this.updateUI()
+    }
+
     updateUI() {
         const playerSprites = [this.sprites["black"], this.sprites["white"]]
         if (this.engine.done && typeof(this.engine.victor) == 'undefined') {
@@ -169,8 +187,7 @@ class Game {
                     }[sprite]
 
                     this.addPreview(pos, toggleSprite, () => {
-                        this.engine.toggleDead(pos)
-                        this.updateUI()
+                        game.toggleDead(pos)
                     })
                 }
             })
@@ -202,9 +219,7 @@ class Game {
 
                 if (myTurn && this.engine.canMove(pos)) {
                     this.addPreview(pos, color, () => {
-                        this.engine.move(pos)
-                        this.playClack()
-                        this.updateUI()
+                        game.move(pos)
                     })
                 }
             })
@@ -220,24 +235,49 @@ class Game {
 }
 
 function main() { // Pick settings and click start
-    $("#game-options .choice").on("click", (ev) => {
-        const choice = $(ev.currentTarget)
-        const option = choice.parent()
-
-        option.find(".choice").removeClass("selected")
-        choice.addClass("selected")
+    // Multiplayer
+    window.multiplayer = new Multiplayer('go')
+    multiplayer.registerBroadcastMethods(["pass", "resign", "finishScoring", "move", "toggleDead"])
+    multiplayer.on("init", (options, player) => {
+        multiplayer.proxy(new Game(options, player))
+        window.game = multiplayer
     })
-    $(".action.play").on("click", () => {
-        const options = {}
-        for (var o of ["handicap", "player", "size"]) {
-            const v = $(`#game-options .choice.selected[data-${o}]`).data(o)
-            if (typeof(v) !== "undefined") options[o] = Number(v)
-        }
-        window.game = new Game(options)
+
+    function optionsDone() {
         $("#game-options").hide()
         $("#game").show()
         $("#about").appendTo(".right")
-    })
+    }
+
+    if (multiplayer.isExistingGame()) {
+        multiplayer.connectExisting() // Existing multiplayer
+        optionsDone()
+    } else {
+        $("#game-options .choice").on("click", (ev) => {
+            const choice = $(ev.currentTarget)
+            const option = choice.parent()
+
+            option.find(".choice").removeClass("selected")
+            choice.addClass("selected")
+        })
+        $(".action.play").on("click", () => {
+            const options = {}
+            for (var o of ["handicap", "player", "size", "online"]) {
+                const v = $(`#game-options .choice.selected[data-${o}]`).data(o)
+                if (typeof(v) !== "undefined") options[o] = Number(v)
+            }
+            if (typeof(options.player) == "undefined") options.player = randInt(0, 2)
+            const me = options.player
+            delete options.player
+
+            if (options.online) {
+                multiplayer.create(options, me) // New multiplayer
+            } else {
+                window.game = new Game(options, me) // New local
+            }
+            optionsDone()
+        })
+    }
 }
 
 main()

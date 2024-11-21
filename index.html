@@ -2,6 +2,7 @@
     <head>
         <script src="jquery.min.js"></script>
         <script src="sprites.js"></script>
+        <script src="multiplayer.js"></script>
         <script src="go-engine.js" defer></script>
         <script src="go-ui.js" charset="utf-8" defer></script>
         <link rel="stylesheet" href="go.css">
@@ -44,20 +45,17 @@
                 <div class="choice" data-handicap="8">8</div>
                 <div class="choice" data-handicap="9">9</div>
             </div>
-            <!--
             <div class="option">
                 <div class="label">Online Color</div>
                 <div class="choice selected">Random</div>
                 <div class="choice" data-player="0">Black</div>
                 <div class="choice" data-player="1">White</div>
             </div>
-            -->
-            <!--
             <div class="option">
+                <div class="label">Play Mode</div>
                 <div class="choice" data-online="true">Online</div>
                 <div class="choice selected" data-online="false">Local</div>
             </div>
-            -->
             <div class="action play">Play</div>
             <pre class="rules">Rules: Chinese scoring, 7.5 komi, simple ko</pre>
         </div>
