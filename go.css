@@ -33,7 +33,7 @@ html, body {
 #game-options {
     min-height: 50%;
     min-width: 50%;
-    padding: 2rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
 }
@@ -106,6 +106,12 @@ html, body {
         border-top: 1px solid lightgrey;
         flex: 0 0;
     }
+    body > #about {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
     #game #about { border-left: 1px solid lightgrey; }
 }
 
@@ -166,6 +172,14 @@ html, body {
     width: 8rem;
 }
 
+.action.share-link {
+    margin: 2rem;
+    text-align: center;
+}
+.action.play {
+    margin-top: 2rem;
+}
+
 .possible-move {
     /*visibility: hidden;*/
     opacity: 0;
@@ -200,7 +214,7 @@ html, body {
 
 .choice {
     background-color: lightgrey;
-    padding: 10px;
+    padding: min(10px, 2vw);
     margin: 5px 0;
     border: 1px solid;
     user-select: none;
@@ -221,9 +235,4 @@ html, body {
 .choice:active, .choice.selected {
     box-shadow: 0 1px #999;
     transform: translateY(2px);
-}
-
-.action.share-link {
-    margin: 2em;
-    text-align: center;
 }
