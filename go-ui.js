@@ -77,6 +77,12 @@ class Game {
                 game.finishScoring(1)
             }
         })
+        if (this.online) {
+            $(".action.share-link").show().on("click", (e) => {
+                e.preventDefault()
+                navigator.clipboard.writeText(window.location.href)
+            })
+        }
 
     }
 
@@ -119,6 +125,7 @@ class Game {
         const i = randInt(1, 5) // 1-4
         this.playSound(`clack${i}`)
     }
+
     playSound(name) {
         const audio = new Audio(`audio/${name}.mp3`)
         audio.play()

@@ -28,7 +28,7 @@ class PubSubRoom {
 
     send(json) {
         //this.receive(json)
-        console.log("Room.sendJson", json)
+        //console.log("Room.sendJson", json)
         this.ws.send(JSON.stringify(json))
     }
 
@@ -37,7 +37,7 @@ class PubSubRoom {
     }
 
     receive(json) {
-        console.log("Room.receiveJson", json)
+        //console.log("Room.receiveJson", json)
         if (this.listener) this.listener(json)
     }
 }
@@ -135,7 +135,7 @@ class Multiplayer {
     async getFreePlayer() {
         this.broadcast("ask-player")
         // Wait 2 seconds, then grab the lowest unknown ID
-        await sleep(1000)
+        await sleep(500)
         for (var i=0; i<100; i++)
             if (!this.knownPlayers[i]) return i
                 return i
@@ -168,7 +168,7 @@ class Multiplayer {
         await this.connect(this.roomName())
         const options = await this.getOptions()
         const freePlayer = await this.getFreePlayer()
-        console.log("connectExisting", options, freePlayer, this.knownPlayers)
+        //console.log("connectExisting", options, freePlayer, this.knownPlayers)
         this.init(options, freePlayer)
     }
 
