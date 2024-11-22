@@ -55,11 +55,12 @@ const spriteNames = ["┌","┬","┐","├","┼","┤","└","┴","┘",".","
 function randInt(min, max) { return Math.floor(Math.random()*(max-min)) + min }
 
 class Game {
-    constructor(options, me) {
+    constructor(options, me, history) {
         this.online = options.online
         this.me = me
 
         this.engine = new Engine(options)
+        for (var h of history) this.replayHistory(h)
 
         this.makeBoard().then(() => { this.updateUI() })
 
@@ -106,6 +107,11 @@ class Game {
                 r.append(this.sprites[symbol].make())
             })
         })
+    }
+
+    replayHistory(e) {
+        if (this.engine[e.name])
+            this.engine[e.name](...e.args)
     }
 
     setSprite(pos, name) {
@@ -245,8 +251,8 @@ function main() { // Pick settings and click start
     // Multiplayer
     window.multiplayer = new Multiplayer('go')
     multiplayer.registerBroadcastMethods(["pass", "resign", "finishScoring", "move", "toggleDead"])
-    multiplayer.on("init", (options, player) => {
-        multiplayer.proxy(new Game(options, player))
+    multiplayer.on("init", (options, player, history) => {
+        multiplayer.proxy(new Game(options, player, history))
         window.game = multiplayer
     })
 

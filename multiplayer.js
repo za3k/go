@@ -13,22 +13,17 @@ class PubSubRoom {
 
     connect() {
         return new Promise((resolve) => {
-            //console.log("Room.connect", this.url)
             this.ws = new WebSocket(this.url)
             this.ws.addEventListener("open", () => {
-                //console.log("Room.connected", this.url)
                 resolve()
             })
             this.ws.addEventListener("message", (msg) => {
-                //console.log("Room.receiveText", msg.data)
                 this.receive(JSON.parse(msg.data))
             })
         })
     }
 
     send(json) {
-        //this.receive(json)
-        //console.log("Room.sendJson", json)
         this.ws.send(JSON.stringify(json))
     }
 
@@ -37,7 +32,6 @@ class PubSubRoom {
     }
 
     receive(json) {
-        //console.log("Room.receiveJson", json)
         if (this.listener) this.listener(json)
     }
 }
@@ -81,10 +75,12 @@ class Multiplayer {
             this.player = this.me
             this.broadcast(name, ...arguments) // Send your moves
             this.trigger(name, ...arguments) // Do your moves
+            this.history.push({name, player: this.player, args: [...arguments]})
         }
         this.onBroadcast(name, (json) => {
             this.player = json.player
             this.trigger(name, ...json.args) // Do other players' moves
+            this.history.push({name, player: this.player, args: json.args})
         })
     }
 
@@ -100,6 +96,10 @@ class Multiplayer {
         this.onBroadcast("ask-player", () => { 
             if (typeof(this.me) != "undefined")
                 this.broadcast("announce-player", this.me) 
+        })
+        this.onBroadcast("ask-history", () => { 
+            if (typeof(this.me) != "undefined")
+                this.broadcast("history", this.history)
         })
         this.onBroadcast("announce-player", (json) => { 
             const player = json.args[0]
@@ -118,7 +118,6 @@ class Multiplayer {
     }
 
     receive(json) {
-        //console.log("Multiplayer.receive", json.name, json)
         this.trigger("broadcast", json.name, json)
         this.trigger(`broadcast-${json.name}`, json)
     }
@@ -129,6 +128,15 @@ class Multiplayer {
                 resolve(json.args[0]) 
             })
             this.broadcast("ask-options")
+        })
+    }
+
+    getHistory() {
+        return new Promise((resolve) => {
+            this.onBroadcast("history", (json) => { 
+                resolve(json.args[0]) 
+            })
+            this.broadcast("ask-history")
         })
     }
 
@@ -161,22 +169,23 @@ class Multiplayer {
         if (typeof(player) == 'undefined') player = 0
         this.setUrl(this.roomName())
         await this.connect(this.roomName())
-        this.init(options, player)
+        this.init(options, player, [])
     }
 
     async connectExisting() {
         await this.connect(this.roomName())
         const options = await this.getOptions()
         const freePlayer = await this.getFreePlayer()
-        //console.log("connectExisting", options, freePlayer, this.knownPlayers)
-        this.init(options, freePlayer)
+        const history = await this.getHistory()
+        this.init(options, freePlayer, history)
     }
 
-    init(options, player) {
+    init(options, player, history) {
         this.options = options
         this.me = player
         this.knownPlayers[this.me] = true
-        this.trigger('init', options, player)
+        this.history = history
+        this.trigger('init', options, player, history)
     }
 }
 
