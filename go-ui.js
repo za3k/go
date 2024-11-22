@@ -220,6 +220,7 @@ class Game {
             const color = ["black", "white"][this.player]
 
             $("#turn-info").text(`${["Black", "White"][this.player]}'s turn`)
+            if (this.online && this.player == this.me) $("#turn-info").append(" (You)")
             const sprite = playerSprites[this.player]
             $("#turn-info").prepend(playerSprites[this.player].make()).append(playerSprites[this.player].make())
 
