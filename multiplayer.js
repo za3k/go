@@ -174,10 +174,10 @@ class Multiplayer {
 
     async connectExisting() {
         await this.connect(this.roomName())
-        const options = await this.getOptions()
-        const freePlayer = await this.getFreePlayer()
-        const history = await this.getHistory()
-        this.init(options, freePlayer, history)
+        const options = this.getOptions()
+        const freePlayer = this.getFreePlayer()
+        const history = this.getHistory()
+        this.init(await options, await freePlayer, await history)
     }
 
     init(options, player, history) {
