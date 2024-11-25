@@ -60,7 +60,7 @@ class Game {
         this.me = me
 
         this.engine = new Engine(options)
-        for (var h of history) this.replayHistory(h)
+        for (var h of (history||[])) this.replayHistory(h)
 
         this.makeBoard().then(() => { this.updateUI() })
 
