@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <script src="jquery.min.js"></script>
+        <script src="sprites.js"></script>
+        <script src="multiplayer.js"></script>
+        <script src="go-engine.js"></script>
+        <script src="go-ui.js" charset="utf-8"></script>
+        <script src="go-screensaver.js" defer></script>
+        <link rel="stylesheet" href="go.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="game" style="display: none;">
+            <div></div>
+            <div id="board"></div>
+            <div></div>
+            <div class="right">
+                <div id="turn-info"></div>
+                <div class="player-label"></div>
+                <div class="player-label"></div>
+                <div id="score" style="display: none;"></div>
+            </div>
+        </div>
+        <div id="about"><b>Go</b> is a classic board game. Learn how to play <a href="https://senseis.xmp.net/?RulesOfGoIntroductory">online</a>. This screensaver is by <a href="https://za3k.com">za3k</a>, written as part of <a href="https://za3k.com/hackaday">hack-a-day</a>. Source code is <a href="https://github.com/za3k/go">on github</a>.</div>
+        <div id="win" style="display: none;">You win!</div>
+    </body>
+</html>
