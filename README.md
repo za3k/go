@@ -4,7 +4,9 @@ There are a number of ways to play free online, but most need registration. I ma
 
 [![](screenshot.png)](https://za3k.github.io/go)
 
-You can [try the demo](https://za3k.github.io/go). The board works well, but there's no online play.
+You can [try the demo](https://za3k.github.io/go). The board works well, and you can play with a friend locally or online.
+
+You can also [watch a screensaver](https://za3k.github.io/go) of go games taken from OGS (about 200 hours in a loop).
 
 Credits:
 - "newspaper" style board original
