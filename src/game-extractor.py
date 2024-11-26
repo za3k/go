@@ -7,6 +7,48 @@ import sys
 path = "../../sample-100k.json.gz"
 outpath = "../games.js"
 
+BOTS = {
+    "Spectral-7k",
+    "Spectral-13k",
+    "amybot-beginner",
+    "random-move-nixbot",
+    "Fuego",
+    "Master Mantis",
+    "GnuGo",
+    "Kugutsu"
+    "TheKid (GnuGo lvl1)",
+    "Billy (GnuGo lvl10)",
+    "doge_bot_4",
+    "noob_bot",
+    "DarkGo",
+    "doge_bot_3",
+    "noob_bot_1",
+    "noob_bot_2",
+    "Spectral-10k",
+    "Spectral-2d",
+    "BadukEllington",
+    "noob_bot_3",
+    "Natsu (Fuego)",
+    "Spectral-1k",
+    "Master Mantis",
+    "Spectral-4k",
+    "amybot-ddk",
+    "Random Bot",
+    "kata-bot",
+    "RaspberryPiBot",
+    "DreamingElephant",
+    "katago-micro",
+    "RoyalZero",
+    "kata-bot",
+    "Budgie 9x9",
+    "ELOtest",
+    "doge_bot_2",
+    "doge_bot_1",
+    "Budgie",
+    "TheKid (GnuGo lvl1)",
+    "Kugutsu",
+}
+
 class NotCool(Exception):
     pass
 
@@ -27,12 +69,20 @@ def reparse(g):
     if width != height: raise NotCool("weird board")
     if width not in [9,13,19]: raise NotCool("weird board")
 
+    if width != 19: raise NotCool("Only boring games, today!")
+
     black = g["players"]["black"]["username"]
     white = g["players"]["white"]["username"]
+    players = [black, white]
+
+    if any(p in BOTS for p in [black, white]): raise NotCool("Bot Game")
 
     moves = g["moves"]
     winner = "BW"[g["winner"] == g["white_player_id"]]
     handicap = g["handicap"]
+    if handicap > 0:
+        if g["free_handicap_placement"]: raise NotCool("Free handicap")
+        #moves = moves[handicap:]
     komi = g["komi"]
     rules = g["rules"]
     moves = g["moves"]
@@ -45,6 +95,7 @@ def reparse(g):
         score = "R"
     elif "point" in g["outcome"]:
         score = float(g["outcome"].split()[0])
+    game_id = g["game_id"]
 
     if not resigned and score is None:
         raise Exception("Huh")
@@ -55,6 +106,7 @@ def reparse(g):
         "komi": komi,
         "size": width,
         "handicap": handicap,
+        "game_id": game_id,
 
         "moves": moves, 
 

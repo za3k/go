@@ -57,12 +57,17 @@ function randInt(min, max) { return Math.floor(Math.random()*(max-min)) + min }
 class Game {
     constructor(options, me, history) {
         this.online = options.online
+        this.replay = options.replay
         this.me = me
 
         this.engine = new Engine(options)
+        this.volume = options.volume
+        $(".player-label span:eq(0)").text(options.blackName)
+        $(".player-label span:eq(1)").text(options.whiteName)
         for (var h of (history||[])) this.replayHistory(h)
 
-        this.makeBoard().then(() => { this.updateUI() })
+        this.ready = this.makeBoard()
+        this.ready.then(() => { this.updateUI() })
 
         $(".action.resign").on("click", () => { 
             game.resign()
@@ -109,6 +114,12 @@ class Game {
         })
     }
 
+    close() {
+        $("#board").empty()
+        $("#win").hide()
+        $("#score").text("")
+    }
+
     replayHistory(e) {
         if (this.engine[e.name])
             this.engine[e.name](...e.args)
@@ -134,7 +145,8 @@ class Game {
 
     playSound(name) {
         const audio = new Audio(`audio/${name}.mp3`)
-        audio.play()
+        if (this.volume) audio.volume = this.volume
+        audio.play().catch(x => x)
     }
 
     eachPos(f) {
@@ -176,9 +188,26 @@ class Game {
         this.updateUI()
     }
 
+    overrideWin(victor, score) {
+        this.victorOverride = victor
+        this.scoreOverride = score
+        this.updateUI()
+    }
+
     updateUI() {
         const playerSprites = [this.sprites["black"], this.sprites["white"]]
-        if (this.engine.done && typeof(this.engine.victor) == 'undefined') {
+        if (this.victorOverride || this.engine.done && typeof(this.engine.victor) != 'undefined') {
+            // Game is over
+            const victor = this.victorOverride || this.engine.victor
+            const score = this.scoreOverride || this.score()
+            const sprite = this.sprites[["black", "white"][victor]]
+            $("#win").show().text(`${["Black", "White"][victor]} wins`).prepend(sprite.make()).append(sprite.make())
+            $("#win, #turn-info").show().text(`${["Black", "White"][victor]} wins`).prepend(sprite.make()).append(sprite.make())
+            $(".my-turn").css("visibility", "hidden")
+            $(".finish-scoring").hide()
+            $("#score").show().text(`Final score: ${score}`)
+            $(".possible-move").remove()
+        } else if (this.engine.done && typeof(this.engine.victor) == 'undefined') {
             // Scoring phase
             $("#turn-info").text(`Scoring`).prepend(playerSprites[0].make()).append(playerSprites[1].make())
             $(".my-turn").hide()
@@ -204,19 +233,9 @@ class Game {
                     })
                 }
             })
-
-        } else if (this.engine.done) {
-            // Game is over
-            const sprite = this.sprites[["black", "white"][this.engine.victor]]
-            $("#win").show().text(`${["Black", "White"][this.engine.victor]} wins`).prepend(sprite.make()).append(sprite.make())
-            $("#win, #turn-info").show().text(`${["Black", "White"][this.engine.victor]} wins`).prepend(sprite.make()).append(sprite.make())
-            $(".my-turn").css("visibility", "hidden")
-            $(".finish-scoring").hide()
-            $("#score").show().text(`Final score: ${this.score()}`)
-            $(".possible-move").remove()
         } else {
             // Regular play
-            const myTurn = this.online && this.me == this.player || !this.online
+            const myTurn = (!this.replay && !this.online) || (this.online && this.me == this.player)
             const color = ["black", "white"][this.player]
 
             $("#turn-info").text(`${["Black", "White"][this.player]}'s turn`)
