@@ -27,6 +27,7 @@ async function loadGame() {
             handicap: g.handicap,
             blackName: g.players.black,
             whiteName: g.players.white,
+            rules: g.rules,
             volume: 0.1,
             replay: true,
         },
@@ -35,6 +36,7 @@ async function loadGame() {
         victor: 0+(g.winner == "W"),
         gameId: g.game_id,
         orig: g,
+        date: g.date,
     }
 }
 
@@ -57,6 +59,9 @@ async function main() {
 
 async function playGame(g) {
     window.game = new Game(g.options)
+    $(".game-id").text(g.gameId)
+    $(".date").text(g.date || "???")
+    $(".rules").text(g.options.rules)
     await game.ready
 
     for (var move of g.moves) {
