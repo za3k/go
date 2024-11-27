@@ -1,3 +1,4 @@
+import datetime
 import gzip
 import io
 import json
@@ -101,12 +102,15 @@ def reparse(g):
         raise Exception("Huh")
     outcome = winner + "+" + ("R" if resigned else str(score))
 
+    date = datetime.datetime.fromtimestamp(g["start_time"]).strftime("%Y-%m-%d")
+
     return {
         "rules": rules,
         "komi": komi,
         "size": width,
         "handicap": handicap,
         "game_id": game_id,
+        "date": date,
 
         "moves": moves, 
 
